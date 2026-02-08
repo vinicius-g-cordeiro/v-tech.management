@@ -29,6 +29,10 @@ class Controller implements ControllerResponseInterface {
         $this->session->set('csrf_token', bin2hex(random_bytes(32)));
     }
 
+    function getCsrfToken(): string {
+        return $this->session->get('csrf_token');
+    }
+
     public function __set($name, $value) {
         $this->$name = $value;
     }

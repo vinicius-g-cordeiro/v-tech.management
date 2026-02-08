@@ -43,5 +43,8 @@
             "name": "Vinicius Cordeiro",
             "email": "cerradogstudio.viniciuscordeiro@gmail.com"
         }
-    ]
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^13.0"
+    }
 }
