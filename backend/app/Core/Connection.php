@@ -17,7 +17,7 @@ namespace App\Core;
 use ADOConnection;
 use ADODB_Exception;
 
-require_once('../vendor/adodb/adodb-php/adodb.inc.php');
+require_once(__DIR__ . '../../../vendor/adodb/adodb-php/adodb.inc.php');
 include_once('../vendor/adodb/adodb-php/adodb-exceptions.inc.php');
 
 
@@ -34,7 +34,7 @@ class Connection  {
                 host: getenv('DB_HOST'),
                 password: '',
                 charset: 'utf8mb4',
-                persistent: 'false',
+                persistent: true,
                 port: 3306,
             );
         }
@@ -55,6 +55,25 @@ class Connection  {
         return self::$instance->dbConnection;
     }
 
+    static function getConnectionInfo() : object {
+        if(self::$instance == null){
+            self::$instance = new Connection();
+        }
+
+        $con = object(
+            driver: self::$instance->connectionInfo->driver,
+            database: self::$instance->connectionInfo->database,
+            username: self::$instance->connectionInfo->username,
+            host: self::$instance->connectionInfo->host,
+            password: self::$instance->connectionInfo->password,
+            charset: self::$instance->connectionInfo->charset,
+            persistent: self::$instance->connectionInfo->persistent,
+            port: self::$instance->connectionInfo->port,
+            self: self::$instance
+        );
+        return $con;
+    }
+
     function getConnection(){
         if(self::$instance == null){
             self::$instance = new Connection(null);
@@ -68,7 +87,11 @@ class Connection  {
             try{
                 $connection = ADONewConnection('mysql');
                 $pass = trim(file_get_contents(getenv('DB_PASSWORD_FILE')));
-                $connection->Connect($this->connectionInfo->host, $this->connectionInfo->username, $pass, $this->connectionInfo->database);
+                if($this->connectionInfo->persistent === true) {
+                    $connection->PConnect($this->connectionInfo->host, $this->connectionInfo->username, $pass, $this->connectionInfo->database);
+                }else{
+                    $connection->Connect($this->connectionInfo->host, $this->connectionInfo->username, $pass, $this->connectionInfo->database);
+                }
                 $connection->SetFetchMode(ADODB_FETCH_ASSOC);
                 $connection->setCharSet($this->connectionInfo->charset);
                 $connection->Execute('SET sql_mode = \'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO\';');
@@ -87,6 +110,10 @@ class Connection  {
 
     function getConnectionId(){
         return $this->dbConnection->_connectionID;
+    }
+
+    function isConnectionPooled() : bool {
+        return $this->dbConnection->ServerInfo()['is_pooled'];
     }
 
 }
