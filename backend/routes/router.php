@@ -227,6 +227,7 @@ class Router {
 			if(getenv('APP_DEBUG') === 'true' && getenv('MYSQL_DEBUG_DATABASE_CONNECTION') === 'true'){
 				print_r($connectionDebugInfo);
 			}
+			
 			$controller = new $route['callback'][0]($databaseConnection, (object)$route['request']);
 			$methodName = $route['callback'][1];
 			

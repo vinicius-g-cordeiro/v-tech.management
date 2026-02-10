@@ -42,15 +42,13 @@ class Connection  {
 
     protected ADOConnection $dbConnection;
 
-    function __construct($dbConnection = null){
-        
-        $this->connect($dbConnection);
-
+    function __construct($indbConnection = null){
+        $this->connect();
     }
 
     static function instance() : ADOConnection {
         if(self::$instance == null){
-            self::$instance = new Connection();
+            self::$instance = new Connection(null);
         }
         return self::$instance->dbConnection;
     }
@@ -95,7 +93,7 @@ class Connection  {
                 $connection->SetFetchMode(ADODB_FETCH_ASSOC);
                 $connection->setCharSet($this->connectionInfo->charset);
                 $connection->Execute('SET sql_mode = \'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO\';');
-                $connection->autoCommit = false;
+                $connection->autoCommit = true;
             }catch(\Exception $e){
                 throw $e;
             }

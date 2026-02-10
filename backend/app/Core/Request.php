@@ -29,6 +29,7 @@ class Request {
     private ?string $uri = null;
     private ?object $params = null;
     private static ?Request $instance = null;
+    private ?string $bearerToken = null;
 
     function __construct() {
         Session::instance();
@@ -43,10 +44,11 @@ class Request {
         $this->cookie = (object)filter_var_array($_COOKIE ?? [], FILTER_DEFAULT, true); //$_COOKIE;
         $this->session = (object)filter_var_array($_SESSION ?? [], FILTER_DEFAULT, true);
         $this->request = (object)filter_var_array($_REQUEST ?? [], FILTER_DEFAULT, true); //)$_REQUEST;
-        $this->body = (object)file_get_contents('php://input');
+        $this->body = (object)json_decode(file_get_contents('php://input'), true);
         $this->headers = (object)getallheaders();
         $this->method = Methods::{$_SERVER['REQUEST_METHOD']};
         $this->uri = $_SERVER['REQUEST_URI'];
+        $this->bearerToken = preg_replace('/Bearer\s?/', '', ($_SERVER['HTTP_AUTHORIZATION'] ?? null) ?: '');
     }
 
     static function instance() : Request {
@@ -99,5 +101,9 @@ class Request {
             method: $this->method,
             uri: $this->uri
         );
+    }
+
+    function getBearerToken() : ?string {
+        return $this->bearerToken;
     }
 }

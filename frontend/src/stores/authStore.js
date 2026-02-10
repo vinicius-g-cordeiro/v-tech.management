@@ -12,7 +12,6 @@ export const useAuthStore = defineStore('auth', () => {
     const isAuthenticated = computed(() => !!token.value && !!user.value)
     const currentUser = computed(() => user.value)
 
-
     async function login(credentials) {
         try {
             loading.value = true
@@ -23,7 +22,13 @@ export const useAuthStore = defineStore('auth', () => {
             token.value = response_data.token
             user.value = response_data.user
             
+            sessionStorage.setItem('token', response_data.token)
+            sessionStorage.setItem('user', JSON.stringify(response_data.user))
+
             localStorage.setItem('token', response_data.token)
+
+            // set current User 
+            currentUser.value = response_data.user
 
             return true
         } catch (err) {

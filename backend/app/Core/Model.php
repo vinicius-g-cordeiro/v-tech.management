@@ -328,8 +328,8 @@ class Model extends Connection {
 
         // remove the password from the response
         unset($result[0]['password']);
-        
-        return (object)$result[0] ?? throw new UserNotFoundException(message: 'User not found', code: 404);
+
+        return (object)$result[0] ?? false;
     }
 
     function loginAs(?int $id = null): object|bool {

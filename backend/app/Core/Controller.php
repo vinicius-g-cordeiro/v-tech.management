@@ -25,6 +25,7 @@ use App\Types\ResponseType;
 #[\AllowDynamicProperties]
 class Controller implements ControllerResponseInterface {
     function __construct(protected ?ADOConnection $connection = null, private ?Request $request = null, private ?Session $session = null, private ?Service $service = null, $view = null) {
+        $this->connection = Connection::instance();
         $this->session = Session::instance();
         $this->session->set('csrf_token', bin2hex(random_bytes(32)));
     }
@@ -49,9 +50,6 @@ class Controller implements ControllerResponseInterface {
         unset($this->$name);
     }
 
-    public function __destruct() {
-        unset($this->connection, $this->request, $this->session, $this->service);
-    }
 
     public function response(?object $data, ?int $statusCode = 200, ?array $headers = [], ?ResponseType $format = ResponseType::JSON): void {
         header("HTTP/1.1 $statusCode");

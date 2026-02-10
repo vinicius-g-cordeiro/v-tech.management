@@ -8,11 +8,18 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE:-app_db}
       MYSQL_USER: ${DB_USERNAME:-app_user}
       MYSQL_PASSWORD_FILE: /run/secrets/db_password
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1.5'
+          memory: 768M    
     ports:
       - "${DB_PORT:-3306}:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+      - ./mysql_data:/var/lib/mysql
     networks:
       - app_network
     secrets:
@@ -50,12 +57,15 @@ services:
       - DB_DATABASE=${DB_DATABASE:-app_db}
       - DB_USERNAME=${DB_USERNAME:-app_user}
       - DB_PASSWORD_FILE=/run/secrets/db_password
+      - APP_KEY_FILE=/run/secrets/app_key
+      - API_KEY_FILE=/run/secrets/api_key
       - PHP_IDE_CONFIG=serverName=Docker
       - XDEBUG_MODE=${XDEBUG_MODE:-off}
       - XDEBUG_CONFIG=${XDEBUG_CONFIG:-client_host=host.docker.internal}
     secrets:
       - db_password
       - app_key
+      - api_key
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -151,7 +161,6 @@ networks:
 
 volumes:
   mysql_data:
-    driver: local
   node_modules:
     driver: local
 
