@@ -26,6 +26,7 @@ use Firebase\JWT\Key;
 
 use App\Exceptions\Authentication\RegistrationFailedException;
 use App\Exceptions\User\UserNotFoundException;
+use App\Exceptions\User\UsernameTakenException;
 use App\Exceptions\Authentication\LoginFailedException;
 
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -53,7 +54,6 @@ class UserService extends Service {
         ]);
 
         $postInfo = $this->request->all()->body;
-
   
         $callback = new Assert\Callback(function ($value, ExecutionContextInterface $context) use ($postInfo) {
             if ($postInfo->password !== $postInfo->password_confirmation) {
@@ -67,6 +67,22 @@ class UserService extends Service {
             throw new RegistrationFailedException(message: 'Exception was thrown in validation, check your request', code: 400, previous: null);
         }
 
+        // check if the username, email or phone already exists on the database
+        $user = $this->model->findUser($postInfo->email, 'email');
+        if ($user !== false) {
+            throw new UsernameTakenException(message: 'Email já está cadastrado', code: 400, previous: null);
+        }
+
+        $user = $this->model->findUser($postInfo->username, 'username');
+        if ($user !== false) {
+            throw new UsernameTakenException(message: 'Nome de usuário ja está cadastrado', code: 400, previous: null);
+        }
+
+        $user = $this->model->findUser($postInfo->phone, 'phone');
+        if ($user !== false) {
+            throw new UsernameTakenException(message: 'Telefone ja está cadastrado', code: 400, previous: null);
+        }
+
         $response = $this->transaction(function () use ($postInfo) {
             return $this->model->store((object)$postInfo);
         });
@@ -75,7 +91,7 @@ class UserService extends Service {
             throw new RegistrationFailedException(message: 'Registration failed with unknown error', code: 400, previous: null);
         }
 
-        return object(success:true, code: 201, message: 'Registration successful');
+        return object(success:true, code: 201, message: 'Registration successful', data: object(user: $response));
     }
 
     function login() : object {
@@ -102,24 +118,46 @@ class UserService extends Service {
             throw new UserNotFoundException(message: 'User not found!', code: 404, previous: null);
         }
 
-        $token = $this->generateToken($user->id);
+        session_regenerate_id();
+        Session::instance()->set('user', $user);
 
-        return object(code: 200, message: 'Login successful', data: object(token: $token, user: $user, success: true));
+        return object(code: 200, message: 'Login successful', data: object(user: $user, success: true));
     }
 
-    public function getUserByToken(string $token): ?object {
-        try {
-            $decoded = JWT::decode($token, new Key($this->secretKey, 'HS256'));
-            $request = object(id: $decoded->user_id);
-            $user = $this->model->find($request);
-            if ($user) {
-                return $user;
-            }
+    function logout() : object {
+        // get the current user by token
+        $user = Session::instance()->get('user');
 
-            return null;
-        } catch (\Exception $e) {
-            return null;
+        if ($user === null) {
+            throw new UserNotFoundException(message: 'User not found!', code: 404, previous: null);
         }
+
+        $response = $this->transaction(function () use ($user) {
+            $user = (object)$user;
+            return $this->model->logout($user->id);
+        });
+
+        if($response === null && $response < 1){
+            throw new LoginFailedException(message: 'Logout failed with unknown error', code: 400, previous: null);
+        }
+
+        Session::instance()->remove('user');
+
+        return object(success:true, code: 200, message: 'Logout successful');
+    }
+
+    function me() : object {
+        // get the current user by token
+        $user = Session::instance()->get('user');
+
+        if ($user === null) {
+            http_response_code(401);
+            header('Content-Type: application/json');
+            echo json_encode(object(success: false, message: 'Unauthorized', code: 401, data: null), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            exit;
+        }
+
+        return object(success:true, code: 200, message: 'User found', data: object(user: $user));
     }
 
 }

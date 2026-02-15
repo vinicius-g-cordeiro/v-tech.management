@@ -1,11 +1,9 @@
 <script setup>
 import { ref } from 'vue';
-const darkMode = ref(localStorage.getItem('darkMode') === 'true');
+const darkMode = ref(localStorage.getItem('darkMode') === 'true' || window.matchMedia('(prefers-color-scheme: dark)').matches || false);
 
 const toggleDarkMode = () => {
-
-    darkMode.value = !darkMode.value;
-
+    darkMode.value = !darkMode.value ? true : false;
     if (darkMode.value) {
         document.documentElement.classList.add('my-app-dark');
     } else {

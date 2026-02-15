@@ -1,4 +1,4 @@
-import api from './api'
+import api from '@/services/api'
 
 const authService = {
   async login(credentials) {
@@ -17,14 +17,9 @@ const authService = {
   },
 
   async me() {
-    const response = await api.get('/auth/me')
+    const response = await api.get('/auth/me', { credentials: true })
     return response.data
   },
-
-  async refreshToken() {
-    const response = await api.post('/auth/refresh')
-    return response.data
-  }
 }
 
 export default authService

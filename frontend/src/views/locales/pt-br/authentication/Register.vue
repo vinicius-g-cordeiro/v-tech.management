@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from '@/stores/Auth/authStore'
 
 const router = useRouter()
 const route = useRoute()
@@ -66,10 +66,11 @@ const handleSubmit = async () => {
 
     if (success) {
         // Redireciona para a página solicitada ou dashboard
-        const redirect = route.query.redirect || '/pt-br/'
+        const redirect = route.query.redirect || '/pt-br/login/'
         router.push(redirect)
     } else {
         errors.value.general = authStore.error
+        console.log(authStore)
     }
 }
 </script>
@@ -86,13 +87,14 @@ const handleSubmit = async () => {
             </div>
             <form @submit.prevent="handleSubmit" method="POST" class="flex flex-col gap-4">
                 <input type="hidden" name="_method" value="POST">
-                <div v-if="errors.general" class="alert alert-error">
+                <div v-if="errors.general" class="flex w-full gap-2 px-4 py-2 mb-4 text-center text-white bg-red-500 alert alert-error">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
                     {{ errors.general }}
                 </div>
 
 
                 <div class="flex grow">
-                    <div class="w-full min-w-[200px]">
+                    <div class="w-full">
                         <label for="email" class="mb-4 font-semibold">Email:</label>
                         <input id="email" v-model="form.email" name="email" type="text" required autocomplete="off" placeholder="Ex: emailpessoal@email.com"
                             class="w-full py-2 pl-3 pr-3 text-sm transition duration-300 bg-transparent border rounded-md shadow-sm placeholder:text-neutral-400 text-neutral-600 border-neutral-200 ease focus:outline-none focus:border-neutral-400 hover:border-neutral-300 focus:shadow" />
@@ -103,7 +105,7 @@ const handleSubmit = async () => {
                 </div>
 
                 <div class="grid grid-cols-2 gap-6">
-                    <div class="w-full min-w-[200px]">
+                    <div class="w-full">
                         <label for="name" class="mb-4 font-semibold">Nome:</label>
                         <input id="name" v-model="form.name" name="name" type="text" required autocomplete="off" placeholder="Ex: João"
                             class="w-full py-2 pl-3 pr-3 text-sm transition duration-300 bg-transparent border rounded-md shadow-sm placeholder:text-neutral-400 text-neutral-600 border-neutral-200 ease focus:outline-none focus:border-neutral-400 hover:border-neutral-300 focus:shadow" />
@@ -112,7 +114,7 @@ const handleSubmit = async () => {
                         </span>
                     </div>
 
-                    <div class="w-full min-w-[200px]">
+                    <div class="w-full">
                         <label for="username" class="mb-4 font-semibold">Nome de Usuário:</label>
                         <input id="username" v-model="form.username" name="username" type="text" required autocomplete="off" placeholder="Ex: joao.123"
                             class="w-full py-2 pl-3 pr-3 text-sm transition duration-300 bg-transparent border rounded-md shadow-sm placeholder:text-neutral-400 text-neutral-600 border-neutral-200 ease focus:outline-none focus:border-neutral-400 hover:border-neutral-300 focus:shadow" />
@@ -124,7 +126,7 @@ const handleSubmit = async () => {
 
 
                 <div class="grid grid-cols-2 gap-6">
-                    <div class="w-full min-w-[200px]">
+                    <div class="w-full">
                         <label for="password" class="mb-4 font-semibold">Senha:</label>
                         <div class="relative">
                             <input id="password" v-model="form.password" name="password" type="password" required autocomplete="off" placeholder="**********"
@@ -141,7 +143,7 @@ const handleSubmit = async () => {
                         </div>
                     </div>
 
-                    <div class="w-full min-w-[200px]">
+                    <div class="w-full">
                         <label for="password_confirmation" class="mb-4 font-semibold">Confirmar Senha:</label>
                         <div class="relative">
                             <input id="password_confirmation" v-model="form.password_confirmation" type="password" required autocomplete="off" placeholder="**********"

@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore';
-
-
+import { useAuthStore } from '@/stores/Auth/authStore';
 
 const routes = [
     {
@@ -30,11 +28,13 @@ const routes = [
                 path: 'login/',
                 name: 'login',
                 component: () => import('@/views/locales/pt-br/authentication/Login.vue'),
+                meta: { title: 'Login' },
             },
             {
                 path: 'registro/',
                 name: 'register',
                 component: () => import('@/views/locales/pt-br/authentication/Register.vue'),
+                meta: { title: 'Registro' },
             },
         ],   
     },
@@ -49,6 +49,7 @@ const routes = [
                 path: 'dashboard/',
                 name: 'dashboard',
                 component: () => import('@/views/locales/pt-br/dashboard/Dashboard.vue'),
+                meta: { title: 'Dashboard' },
             },
         ],
     },
@@ -76,23 +77,35 @@ const router = createRouter({
     routes
 })
 
-
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to) => {
     const authStore = useAuthStore()
-    document.title = to.meta.title ? `${to.meta.title} - App ` : 'App'
-    await authStore.checkAuth()
+    document.title = to.meta.title ? `${to.meta.title} - V-Tech Sistemas` : 'V-Tech Sistemas'
+
+    if (!authStore.hydration) {
+        await authStore.fetchUser()
+    }
+
     const isAuthenticated = authStore.isAuthenticated
-    const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-    const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
+    const requiresAuth = to.matched.some(r => r.meta.requiresAuth)
+    const requiresGuest = to.matched.some(r => r.meta.requiresGuest)
 
-    if(requiresAuth && !isAuthenticated){
-        return next({ name: 'login' , query: { redirect: to.fullPath } })
+    // Block guests from protected pages
+    if (requiresAuth && !isAuthenticated) {
+        return {
+            name: 'login',
+            query: { redirect: to.fullPath }
+        }
     }
 
-    if(requiresGuest && isAuthenticated){
-        return next({ name: 'dashboard' })
+    // Block logged users from guest pages
+    if (requiresGuest && isAuthenticated) {
+        return { name: 'dashboard' }
     }
 
-    next()
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+        return { name: 'login' }
+    }
+
 })
+
 export default router

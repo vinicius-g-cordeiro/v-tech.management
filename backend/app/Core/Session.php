@@ -41,13 +41,20 @@ class Session {
     }
 
     function get(string $key = '') {
+        if(isset($key) === false) return $_SESSION;
+        if(isset($_SESSION[$key]) === false) return null;
         return $_SESSION[$key] ?? null;
     }
 
     function set(string $key, $value) {
         $_SESSION[$key] = $value;
-
         return $_SESSION[$key];
+    }
+
+    function remove($key){
+        if(!isset($_SESSION[$key])) return;
+        unset($_SESSION[$key]);
+        return (!isset($_SESSION[$key]));
     }
 
     function notification(string $key = '', string $value = '') : object {

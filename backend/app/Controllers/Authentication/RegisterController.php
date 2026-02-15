@@ -23,6 +23,7 @@ use App\Models\UserModel;
 use App\Core\Connection;
 
 use App\Exceptions\Authentication\RegistrationFailedException;
+use App\Exceptions\User\UsernameTakenException;
 use Exception;
 
 class RegisterController extends Controller {
@@ -35,11 +36,20 @@ class RegisterController extends Controller {
     function index() : void { }
 
     function store() : string {
+        header("Content-Type: application/json");
         try{
+            http_response_code(201);
             $response = $this->service->register();
         }catch(RegistrationFailedException $e){
+            http_response_code(400);
             $response = object(success: false, message: $e->getMessage(), code: $e->getCode());
+        }catch(UsernameTakenException $e){
+            http_response_code($e->getCode());
+            $response = object(success: false, message: $e->getMessage(), code: $e->getCode());
+            echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            exit;
         }catch(Exception $e){
+            http_response_code(500);
             $response = object(success: false, message: $e->getMessage(), code: $e->getCode());
         }
         return json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);

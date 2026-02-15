@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from '@/stores/Auth/authStore'
 
 const router = useRouter()
 const route = useRoute()
@@ -38,7 +38,7 @@ const handleSubmit = async () => {
 
     if (success) {
         // Redireciona para a página solicitada ou dashboard
-        const redirect = route.query.redirect || '/'
+        const redirect = route.query.redirect || '/pt-br/dashboard/'
         router.push(redirect)
     } else {
         errors.value.general = authStore.error

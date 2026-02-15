@@ -343,7 +343,7 @@ class Model extends Connection {
             status: 2,
         );
 
-        $this->getConnection()->AutoExecute($this->tableName, $fields, 'UPDATE', 'id = ' . $id);
+        $this->getConnection()->AutoExecute($this->tableName, (array)$fields, 'UPDATE', 'id = ' . $id);
 
         return object(success: true, id: $this->getConnection()->Affected_Rows());
     }
@@ -366,6 +366,28 @@ class Model extends Connection {
         $query = $this->dbConnection->Prepare('SELECT * FROM ' . $this->tableName . ' WHERE email = ?;');
         $response = $this->dbConnection->Execute($query,[$email]);
         $result = $this->fr2Arr($response);
+        unset($result[0]['password']);
+        return $result ? (object)$result[0] : false;
+    }
+
+    function findUser(?string $username = null, string $column = 'username'): object|bool {
+        switch ($column) {
+            case 'email':
+                $query = $this->dbConnection->Prepare('SELECT * FROM ' . $this->tableName . ' WHERE email = ? LIMIT 1;');
+                break;
+            case 'username':
+                $query = $this->dbConnection->Prepare('SELECT * FROM ' . $this->tableName . ' WHERE username = ? LIMIT 1;');
+                break;
+            case 'phone':
+                $query = $this->dbConnection->Prepare('SELECT * FROM ' . $this->tableName . ' WHERE phone = ? LIMIT 1;');
+                break;
+            default:
+                $query = $this->dbConnection->Prepare('SELECT * FROM ' . $this->tableName . ' WHERE username = ? LIMIT 1;');
+                break;
+        }
+        $response = $this->dbConnection->Execute($query,[$username]);
+        $result = $this->fr2Arr($response);
+        unset($result[0]['password']);
         return $result ? (object)$result[0] : false;
     }
 

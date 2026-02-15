@@ -55,4 +55,17 @@ class LoginController extends Controller {
         echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         exit;
     }
+
+    function logout() : string {
+        header("Content-Type: application/json");
+        try{
+            $response = $this->service->logout();
+            http_response_code(200);
+        }catch(Exception $e){
+            $response = object(success: false, message: $e->getMessage(), code: $e->getCode(), data: null);
+            http_response_code($e->getCode());
+        }
+        echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        exit;
+    }
 }

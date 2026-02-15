@@ -1,10 +1,8 @@
 <script setup>
-import { ref } from 'vue';
-import { useAuthStore } from '@/stores/authStore'
-import { useRouter } from 'vue-router'
+
 import Header from '@/components/locales/pt-br/navigation/Header.vue';
 import Footer from '@/components/locales/pt-br/navigation/Footer.vue';
-import Sidebar from '@/components/locales/pt-br/navigation/Sidebar.vue';
+
 
 </script>
 

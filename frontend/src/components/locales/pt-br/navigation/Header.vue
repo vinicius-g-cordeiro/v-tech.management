@@ -25,40 +25,54 @@
                     </router-link>
                 </template>
                 <template #end="{ items }">
-                    <router-link to="/pt-br/login/" class="flex items-center gap-1 text-neutral-900 dark:text-neutral-50 hover:text-emerald-500 dark:hover:text-emerald-500 hover:border-b-emerald-500" title="Login" v-if="!authStore.currentUser">
+                    <router-link to="/pt-br/login/" class="flex items-center gap-1 text-neutral-900 dark:text-neutral-50 hover:text-emerald-500 dark:hover:text-emerald-500 hover:border-b-emerald-500" title="Login" v-if="!authStore.sessionUser">
                         <i class="bi bi-door-open-fill"></i>
                         Login
                     </router-link>
 
-                    <router-link to="/pt-br/registro/" class="flex items-center gap-1 text-neutral-900 dark:text-neutral-50 hover:text-emerald-500 dark:hover:text-emerald-500 hover:border-b-emerald-500" title="Registrar" v-if="!authStore.currentUser">
+                    <router-link to="/pt-br/registro/" class="flex items-center gap-1 text-neutral-900 dark:text-neutral-50 hover:text-emerald-500 dark:hover:text-emerald-500 hover:border-b-emerald-500" title="Registrar" v-if="!authStore.sessionUser">
                         <i class="bi bi-person-plus"></i>
                         Registrar
                     </router-link>
                     <hr class="h-px bg-transparent border-t-0 shadow-lg opacity-25 bg-gradient-to-r from-transparent via-neutral-500 to-transparent dark:via-neutral-400 dark:shadow-sm dark:shadow-neutral-100" />
-                    <router-link to="/pt-br/perfil/" class="flex items-center gap-1 p-1 text-sm text-neutral-900 dark:text-neutral-50 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-emerald-500 dark:hover:text-emerald-500 hover:border-b-emerald-500" v-if="authStore.currentUser">
-                        <img class="w-10 h-10 rounded-full" :src="authStore.currentUser.avatar || 'https://ui-avatars.com/api/?name=' + authStore.currentUser.name" :alt="authStore.currentUser.name">
-                        <ul class="flex flex-col justify-start gap-1 text-neutral-900 dark:text-neutral-50">
-                            <li v-if="authStore.currentUser" class="font-bold">{{ authStore.currentUser.name }}</li>
-                            <li v-if="authStore.currentUser" class="text-xs">{{ authStore.currentUser.email }}</li>
-                        </ul>
-                        <ul class="flex flex-col justify-end ms-auto justify-self-end text-neutral-900 dark:text-neutral-50">
-                            <!-- options dropdown -->
-                            <li>
-                                <i class="bi bi-caret-up"></i>
-                            </li>
-                            <li>
-                                <i class="bi bi-caret-down"></i>
-                            </li>
-                        </ul>
-
-
-                    </router-link>
+                    <ProfileDropdown position="top-right">
+                        <template #button="{ toggle, open }">
+                            <ProfileDropdownButton :toggle="toggle" :open="open" v-if="authStore.sessionUser">
+                                <img class="w-8 h-8 rounded-full" :src="authStore.sessionUser.avatar || 'https://ui-avatars.com/api/?name=' + authStore.sessionUser.name" :alt="authStore.sessionUser.name">
+                                <section class="flex flex-col w-full gap-1">
+                                    <span class="text-xs font-semibold leading-tight text-neutral-900 dark:text-neutral-50">
+                                        {{ authStore.sessionUser.name }} {{ authStore.sessionUser.lastname }}
+                                    </span>
+                                    <span class="text-xs font-semibold leading-tight text-neutral-900 dark:text-neutral-50">
+                                        {{ authStore.sessionUser.email }}
+                                    </span>
+                                </section>
+                                <section class="flex items-center gap-1">
+                                    <i :class="open ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill'"></i>
+                                </section>
+                            </ProfileDropdownButton>
+                        </template>
+                        
+                        <ProfileDropdownItem :to="'/pt-br/perfil'">
+                            <i class="bi bi-person-fill"></i>
+                            Perfil
+                        </ProfileDropdownItem>
+                        <ProfileDropdownItem :to="'/pt-br/configuracoes'">
+                            <i class="bi bi-gear-fill"></i>
+                            Configurações
+                        </ProfileDropdownItem>
+                        <ProfileDropdownItem @click="handleLogout">
+                            <i class="bi bi-box-arrow-right"></i>
+                            Sair
+                        </ProfileDropdownItem>
+                    
+                    </ProfileDropdown>
                 </template>
             </Sidebar>
         </ul>
         <ul class="flex items-center gap-4 px-4" >
 
-            <li class="flex items-center gap-1 border-b-0 cursor-pointer text-neutral-900 dark:text-neutral-50 hover:border-b-2 hover:border-b-emerald-500" v-if="authStore.currentUser">
+            <li class="flex items-center gap-1 border-b-0 cursor-pointer text-neutral-900 dark:text-neutral-50 hover:border-b-2 hover:border-b-emerald-500" v-if="authStore.sessionUser">
                 <div class="relative rounded-full">
                     <i class="bi bi-bell-fill"></i>
                     <!-- number of notifications -->
@@ -78,12 +92,17 @@
 import { ref } from "vue";
 import DarkmodeButton from '@/components/shared/DarkmodeButton.vue'
 import Sidebar from "@/components/locales/pt-br/navigation/Sidebar.vue";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/Auth/authStore";
 import { useRouter } from "vue-router";
-
+import ProfileDropdown from "@/components/locales/pt-br/navigation/ProfileDropdown.vue";
+import ProfileDropdownButton from "@/components/locales/pt-br/navigation/ProfileDropdownButton.vue";
+import ProfileDropdownItem from "@/components/locales/pt-br/navigation/ProfileDropdownItem.vue";
+const items = ref([])
 const authStore = useAuthStore()
 const router = useRouter()
 
-
-
+const handleLogout = async () => {
+    await authStore.logout()
+    router.replace({ name: 'login' })
+}
 </script>

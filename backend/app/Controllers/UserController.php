@@ -46,10 +46,11 @@ class UserController extends Controller {
     }
 
     function me() : string {
+        header("Content-Type: application/json");
         $response = null;
         try {
-            $user = $this->service->getUserByToken($this->request->getBearerToken());
-            $response = object(success: true, message: 'Usuário encontrado', code: 200, data: object(user: $user, token: $this->request->getBearerToken()));
+            http_response_code(200);
+            $response = $this->service->me();
         } catch (Exception $e) {
             $response = object(success: false, message: $e->getMessage(), code: $e->getCode(), data: null);
         }
